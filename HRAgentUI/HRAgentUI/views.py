@@ -28,7 +28,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
+doc_search = DOCXSearchTool("/Users/aneeshbukya/Desktop/Projects/HRAgent/HRAgentUI/HRAgentUI/Employee-Code-of-Conduct.docx")
 google_search = SerperDevTool()
 
 def homepage(request):
@@ -97,17 +97,12 @@ def summarize_notes(request):
 def process_form(request):
     if request.method == 'POST':
         question = request.POST.get('question')
-        uploaded_file = request.FILES.get('document')
 
-        if not question or not uploaded_file:
-            return JsonResponse({'summary': 'Please provide both a question and a document.'}, status=400)
-
-        # Save the uploaded file to a temporary location
-        file_path = default_storage.save(f'temp/{uploaded_file.name}', uploaded_file)
+        if not question:
+            return JsonResponse({'summary': 'Please provide a question.'}, status=400)
 
         try:
             # Create an instance of DOCXSearchTool with the document
-            doc_search = DOCXSearchTool(file_path)
 
             faq_agent = Agent(
                 role='Human Resource Employee',
@@ -125,12 +120,12 @@ def process_form(request):
                 return Task(
                     description=dedent(f"""\
                         Find all the relevant areas of the document where the words from the question appear and
-                        summarize them in a few sentences.
+                        summarize them in a few words.
                         Question: {question}"""),
                     expected_output=dedent("""\
-                        A few sentences summarizing the relevant information in the document which 
-                        contains the keyword asked in the question. Starts each answer with Our company
-                        policy states that."""),
+                        Give a single conclusive answer using the relevant information in the document which 
+                        contains the keyword asked in the question. Answer the question with a yes or no.
+                     Start each answer with yes or no and then say' our company policy states that'."""),
                     agent=faq_agent
                 )
 
@@ -141,10 +136,8 @@ def process_form(request):
 
             return JsonResponse({'summary': result})
 
-        finally:
-            # Clean up the temporary file
-            if os.path.exists(file_path):
-                os.remove(file_path)
+        except Exception as e:
+            return JsonResponse({'summary': f'An error occurred: {str(e)}'}, status=500)
 
     return JsonResponse({'summary': 'Invalid request method.'}, status=405)
 
@@ -310,10 +303,14 @@ def onboarding_submit(request):
         result = crew.kickoff()
 
         # Define email sender and receiver
-        email_sender = 'aneeshbsri@gmail.com'
-        email_password = "rsds xytr dtgz xrme"
+        email_sender = os.getenv('EMAIL_SENDER')
+        email_password = os.getenv('EMAIL_PASSWORD')
         email_receiver = email
-
+        
+        # Check if the environment variables are loaded correctly
+        if not email_sender or not email_password:
+            raise ValueError("Email credentials are not set in the environment variables")
+        
         # Set the subject and body of the email
         subject = 'Welcome to Company XYZ!!!'
         body = result
