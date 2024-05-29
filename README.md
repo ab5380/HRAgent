@@ -96,8 +96,7 @@ The HR Agent project is a Django-based web application designed to automate vari
     ```
 5. **Create a new Pull Request**.
 
-## License
-This project is licensed under the MIT License. See the LICENSE file for more details.
+
 
 ## Contact
 For questions or suggestions, please contact [Aneesh Bukya](mailto:aneeshbsri@gmail.com).
