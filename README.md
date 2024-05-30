@@ -35,6 +35,10 @@ The HR Agent project is a Django-based web application designed to automate vari
     EMAIL_SENDER=your-email@gmail.com
     EMAIL_PASSWORD=your-email-password
     DOCX_FILE_PATH=/path/to/Employee-Code-of-Conduct.docx
+    EXA_API_KEY=
+    OPENAI_API_KEY=
+    SERPER_API_KEY=
+    OPENAI_MODEL_NAME=gpt-3.5-turbo-0125	
     ```
 
 5. **Run database migrations**:
