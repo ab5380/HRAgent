@@ -140,103 +140,106 @@ def process_form(request):
             return JsonResponse({'summary': f'An error occurred: {str(e)}'}, status=500)
 
     return JsonResponse({'summary': 'Invalid request method.'}, status=405)
+# This is the backend logic for the email onboarding, used two agents to see how the context feature of CrewAI works
+# @csrf_exempt
+# def onboarding_submit(request):
+#     if request.method == 'POST':
+#         name = request.POST.get('name')
+#         role = request.POST.get('role')
+#         email = request.POST.get('email')
+#         code_of_conduct = request.POST.get('codeOfConduct')
 
-def onboarding_form(request):
-    email_sent = False
+#         # Define your agents, tasks, and crew as per your requirements
+#         researcher_agent = Agent(
+#             role="Research Specialist",
+#             goal='Research the role to find the best practices for the job role and provide links on how to be successful ',
+#             tools=[google_search],
+#             backstory=dedent("""\
+#               As a Research Specialist, your job is to search the web and come up with the best practices and methods
+#               to be successful at a specific job role and also provide useful links which talk about how to be successful
+#               in the particular job role."""),
+#             verbose=True
+#         )
 
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        role = request.POST.get('role')
-        email = request.POST.get('email')
-        code_of_conduct = request.POST.get('codeOfConduct')
+#         def research_task(role):
+#             return Task(
+#                 description=dedent(f"""\
+#                     generate the best practices and ways a person can successful at the given job role
+#                     Job Role: {role}"""),
+#                 expected_output=dedent("""\
+#                     The best practices and things to do to be successful at the job role along with useful links for reference"""),
+#                 agent=researcher_agent,
+#             )
 
-        # Define the agents and tasks
-        researcher_agent = Agent(
-            role="Research Specialist",
-            goal='Research the role to find the best practices for the job role and provide links on how to be successful ',
-            tools=[google_search],
-            backstory=dedent("""\
-                As a Research Specialist, your job is to search the web and come up with the best practices and methods
-                to be successful at a specific job role and also provide useful links which talk about how to be successful
-                in the partciular job role."""),
-            verbose=True
-        )
+#         set_research_task = research_task(role)
 
-        greet_agent = Agent(
-            role="Personalized Message Sender",
-            goal='Write a personalized message to person and welcome them into the company ',
-            backstory=dedent("""\
-                Your job is to write a personalized message to the new employee joining the company and talk about company culture and wish
-                the employee success in the company"""),
-            verbose=True
-        )
+#         greet_agent = Agent(
+#             role="Personalized Message Sender",
+#             goal='Write a personalized message to person and welcome them into the company ',
+#             backstory=dedent("""\
+#               Your job is to write a personalized message to the new employee joining the company and talk about company culture and wish
+#               the employee success in the company"""),
+#             verbose=True
+#         )
 
-        def research_task(role):
-            return Task(
-                description=dedent(f"""\
-                    generate the best practices and ways a person can successful at the given job role
-                    Job Role: {role}"""),
-                expected_output=dedent("""\
-                    The best practices and things to do to be successful at the job role along with useful links for reference"""),
-                agent=researcher_agent,
-            )
+#         def onboard_task(name, link):
+#             return Task(
+#                 description=dedent(f"""\
+#                     onboard the people by wishing good luck and ask them to review the code of conduct
+#                     Employee Code of Conduct Link: {link},
+#                     Name: {name}"""),
+#                 expected_output=dedent("""\
+#                     Output should be formatted like this:
+#                     - Greeting and well wishes 
+#                     - Ask to review Employee Code of Conduct with link 
+#                     - Best Practices to be successful along with links
+#                     - end it with
+#                     Best Regards,
+#                     John McEnroe,
+#                     HR of Company XYZ"""),
+#                 agent=greet_agent,
+#                 context=[set_research_task]
+#             )
 
-        set_research_task = research_task(role)
+#         set_onboard_task = onboard_task(name, link=code_of_conduct)
 
-        def onboard_task(name, link):
-            return Task(
-                description=dedent(f"""\
-                    onboard the people by wishing good luck and ask them to review the code of conduct
-                    Employee Code of Conduct Link: {link},
-                    Name: {name}"""),
-                expected_output=dedent("""\
-                    Output should be formatted like this:
-                    - Greeting and well wishes 
-                    - Ask to review Employee Code of Conduct with link 
-                    - Best Practices to be successful along with links
-                    - end it with
-                    Best Regards,
-                    John McEnroe,
-                    HR of Company XYZ"""),
-                agent=greet_agent,
-                context=[set_research_task]
-            )
+#         crew = Crew(agents=[researcher_agent, greet_agent], tasks=[set_research_task, set_onboard_task])
+#         # Get your crew to work!
+#         result = crew.kickoff()
 
-        set_onboard_task = onboard_task(name, link=code_of_conduct)
+#         # Define email sender and receiver
+#         email_sender = os.getenv('EMAIL_SENDER')
+#         email_password = os.getenv('EMAIL_PASSWORD')
+#         email_receiver = email
+        
+#         # Check if the environment variables are loaded correctly
+#         if not email_sender or not email_password:
+#             raise ValueError("Email credentials are not set in the environment variables")
+        
+#         # Set the subject and body of the email
+#         subject = 'Welcome to Company XYZ!!!'
+#         body = result
 
-        # Crew setup and kickoff
-        crew = Crew(agents=[researcher_agent, greet_agent], tasks=[set_research_task, set_onboard_task])
-        result = crew.kickoff()
+#         em = EmailMessage()
+#         em['From'] = email_sender
+#         em['To'] = email_receiver
+#         em['Subject'] = subject
+#         em.set_content(body)
 
-        # Define email sender and receiver
-        email_sender = 'aneeshbsri@gmail.com'
-        email_password = "rsds xytr dtgz xrme"
-        email_receiver = email
+#         # Add SSL (layer of security)
+#         context = ssl.create_default_context()
 
-        # Set the subject and body of the email
-        subject = 'Welcome to Company XYZ!!!'
-        body = result
+#         # Log in and send the email
+#         with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
+#             smtp.login(email_sender, email_password)
+#             smtp.sendmail(email_sender, email_receiver, em.as_string())
 
-        em = EmailMessage()
-        em['From'] = email_sender
-        em['To'] = email_receiver
-        em['Subject'] = subject
-        em.set_content(body)
-
-        # Add SSL (layer of security)
-        context = ssl.create_default_context()
-
-        # Log in and send the email
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
-            smtp.login(email_sender, email_password)
-            smtp.sendmail(email_sender, email_receiver, em.as_string())
-
-        email_sent = True
-
-    return render(request, 'onboarding_form.html', {'email_sent': email_sent})
+#         # Returning a JSON response indicating success
+#         return JsonResponse({'message': 'Email sent successfully!', 'result': result})
+#     else:
+#         return JsonResponse({'message': 'Invalid request method!'}, status=400)
 
 
-@csrf_exempt
 def onboarding_submit(request):
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -244,44 +247,47 @@ def onboarding_submit(request):
         email = request.POST.get('email')
         code_of_conduct = request.POST.get('codeOfConduct')
 
-        # Define your agents, tasks, and crew as per your requirements
-        researcher_agent = Agent(
-            role="Research Specialist",
-            goal='Research the role to find the best practices for the job role and provide links on how to be successful ',
-            tools=[google_search],
-            backstory=dedent("""\
-              As a Research Specialist, your job is to search the web and come up with the best practices and methods
-              to be successful at a specific job role and also provide useful links which talk about how to be successful
-              in the particular job role."""),
-            verbose=True
-        )
+        # # Define your agents, tasks, and crew as per your requirements
+        # researcher_agent = Agent(
+        #     role="Research Specialist",
+        #     goal='Research the role to find the best practices for the job role and provide links on how to be successful ',
+        #     tools=[google_search],
+        #     backstory=dedent("""\
+        #       As a Research Specialist, your job is to search the web and come up with the best practices and methods
+        #       to be successful at a specific job role and also provide useful links which talk about how to be successful
+        #       in the particular job role."""),
+        #     verbose=True
+        # )
 
-        def research_task(role):
-            return Task(
-                description=dedent(f"""\
-                    generate the best practices and ways a person can successful at the given job role
-                    Job Role: {role}"""),
-                expected_output=dedent("""\
-                    The best practices and things to do to be successful at the job role along with useful links for reference"""),
-                agent=researcher_agent,
-            )
+        # def research_task(role):
+        #     return Task(
+        #         description=dedent(f"""\
+        #             generate the best practices and ways a person can successful at the given job role
+        #             Job Role: {role}"""),
+        #         expected_output=dedent("""\
+        #             The best practices and things to do to be successful at the job role along with useful links for reference"""),
+        #         agent=researcher_agent,
+        #     )
 
-        set_research_task = research_task(role)
+        # set_research_task = research_task(role)
 
         greet_agent = Agent(
-            role="Personalized Message Sender",
-            goal='Write a personalized message to person and welcome them into the company ',
+            role="Personalized Message Sender and Research Specialist",
+            goal='Write a personalized message to person and welcome them into the company. Also, Research the role to find the best practices for the job role and provide links on how to be successful.',
             backstory=dedent("""\
               Your job is to write a personalized message to the new employee joining the company and talk about company culture and wish
-              the employee success in the company"""),
+              the employee success in the company.Also, your job is to search the web and come up with the best practices and methods
+              to be successful at a specific job role and also provide useful links which talk about how to be successful
+              in the particular job role. """),
             verbose=True
         )
 
         def onboard_task(name, link):
             return Task(
                 description=dedent(f"""\
-                    onboard the people by wishing good luck and ask them to review the code of conduct
+                    onboard the people by wishing good luck and ask them to review the code of conduct.generate the best practices and ways a person can successful at the given job role
                     Employee Code of Conduct Link: {link},
+                    Job Role: {role},
                     Name: {name}"""),
                 expected_output=dedent("""\
                     Output should be formatted like this:
@@ -293,12 +299,11 @@ def onboarding_submit(request):
                     John McEnroe,
                     HR of Company XYZ"""),
                 agent=greet_agent,
-                context=[set_research_task]
             )
 
         set_onboard_task = onboard_task(name, link=code_of_conduct)
 
-        crew = Crew(agents=[researcher_agent, greet_agent], tasks=[set_research_task, set_onboard_task])
+        crew = Crew(agents=[greet_agent], tasks=[set_onboard_task])
         # Get your crew to work!
         result = crew.kickoff()
 
