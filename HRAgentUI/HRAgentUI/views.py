@@ -125,7 +125,7 @@ def process_form(request):
                     expected_output=dedent("""\
                         Give a single conclusive answer using the relevant information in the document which 
                         contains the keyword asked in the question. Answer the question with a yes or no.
-                     Start each answer with yes or no and then say' our company policy states that'."""),
+                     Start each answer with yes or no and then say' our company policy states that'. Answer should not be longer than 2-3 sentences."""),
                     agent=faq_agent
                 )
 
@@ -140,7 +140,7 @@ def process_form(request):
             return JsonResponse({'summary': f'An error occurred: {str(e)}'}, status=500)
 
     return JsonResponse({'summary': 'Invalid request method.'}, status=405)
-# This is the backend logic for the email onboarding, used two agents to see how the context feature of CrewAI works
+
 # @csrf_exempt
 # def onboarding_submit(request):
 #     if request.method == 'POST':
