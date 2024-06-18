@@ -5,10 +5,9 @@ The HR Agent project is a Django-based web application designed to automate vari
 
 ## Features
 1. **Homepage**: A simple welcome page.
-2. **About Page**: Provides information about the project.
-3. **Candidate Notes Summarization**: Summarizes notes on candidates from uploaded text files.
-4. **FAQ Agent**: Answers frequently asked questions by searching a specified document.
-5. **Onboarding Form**: Sends personalized onboarding emails to new employees with best practices and company policies.
+2. **Candidate Notes Summarization**: Summarizes notes on candidates from uploaded text files.
+3. **FAQ Agent**: Answers frequently asked questions by searching a specified document.
+4. **Onboarding Form**: Sends personalized onboarding emails to new employees with best practices and company policies.
 
 ## Installation
 
