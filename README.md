@@ -1,4 +1,4 @@
-# AI-Powered HR Agents 
+# EmpowerHR: AI-Powered HR Agents 
 
 ## Overview
 The HR Agent project is a Django-based web application designed to automate various human resource tasks, such as summarizing candidate notes, answering FAQs, and onboarding new employees. The project leverages AI agents for processing and generating responses to streamline HR operations.
